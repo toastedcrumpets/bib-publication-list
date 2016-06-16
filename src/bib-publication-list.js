@@ -230,60 +230,72 @@ var bibtexify = (function($) {
     };
     var bibproto = Bib2HTML.prototype;
     bibproto.initialize = function initialize(data) {
-        var bibtex = new BibTex();
-        bibtex.content = data;
-        bibtex.parse();
-        var bibentries = [], len = bibtex.data.length;
-        var entryTypes = {};
+        this.bibtex = new BibTex();
+        this.bibtex.content = data;
+        this.bibtex.parse();
+        this.bibentries = [];
+	var len = this.bibtex.data.length;
+        this.entryTypes = {};
+	this.entryDict = {};
         jQuery.extend(true, bib2html, this.options.bib2html);
         for (var index = 0; index < len; index++) {
-            var item = bibtex.data[index];
+            var item = this.bibtex.data[index];
             if (!item.year) {
               item.year = this.options.defaultYear || "To Appear";
             }
-            var html = bib2html.entry2html(item, this);
-            bibentries.push([item.year, bib2html.labels[item.entryType], html]);
-            entryTypes[bib2html.labels[item.entryType]] = item.entryType;
+            item.html = bib2html.entry2html(item, this);
+            this.bibentries.push([item.year, bib2html.labels[item.entryType], item.html]);
+            this.entryTypes[bib2html.labels[item.entryType]] = item.entryType;
             this.updateStats(item);
-        }
-        jQuery.fn.dataTableExt.oSort['type-sort-asc'] = function(x, y) {
-            var item1 = bib2html.importance[entryTypes[x]],
-                item2 = bib2html.importance[entryTypes[y]];
-            return ((item1 < item2) ? -1 : ((item1 > item2) ?  1 : 0));
-        };
-        jQuery.fn.dataTableExt.oSort['type-sort-desc'] = function(x, y) {
-            var item1 = bib2html.importance[entryTypes[x]],
-                item2 = bib2html.importance[entryTypes[y]];
-            return ((item1 < item2) ? 1 : ((item1 > item2) ?  -1 : 0));
-        };
-        var table = this.$pubTable.dataTable({ 'aaData': bibentries,
-                              'aaSorting': this.options.sorting,
-                              'aoColumns': [ { "sTitle": "Year" },
-                                             { "sTitle": "Type", "sType": "type-sort", "asSorting": [ "desc", "asc" ] },
-                                             { "sTitle": "Publication", "bSortable": false }],
-                              'bPaginate': false
-                            });
-        if (this.options.visualization) {
-            this.addBarChart();
-        }
-        $("th", this.$pubTable).unbind("click").click(function(e) {
-          var $this = $(this),
-              $thElems = $this.parent().find("th"),
-              index = $thElems.index($this);
-          if ($this.hasClass("sorting_disabled")) { return; }
-          $this.toggleClass("sorting_asc").toggleClass("sorting_desc");
 
-          if (index === 0) {
-            table.fnSort( [[0, $thElems.eq(0).hasClass("sorting_asc")?"asc":"desc"],
-                        [1, $thElems.eq(1).hasClass("sorting_asc")?"asc":"desc"]]);
-          } else {
-            table.fnSort( [[1, $thElems.eq(1).hasClass("sorting_asc")?"asc":"desc"],
-                          [0, $thElems.eq(0).hasClass("sorting_asc")?"asc":"desc"]]);
-          }
-        });
-        // attach the event handlers to the bib items
-        $(".biblink", this.$pubTable).on('click', EventHandlers.showbib);
-        $(".bibclose", this.$pubTable).on('click', EventHandlers.hidebib);
+	    //Add a dictionary to look up citations
+	    if (item.cite in this.entryDict) {
+		console.log("Error! Bibtex key appears multiple times");
+		console.log(item);
+	    }
+	this.entryDict[item.cite] = item;
+        }
+
+	if (this.$pubTable) {
+            jQuery.fn.dataTableExt.oSort['type-sort-asc'] = function(x, y) {
+		var item1 = bib2html.importance[this.entryTypes[x]],
+                    item2 = bib2html.importance[this.entryTypes[y]];
+		return ((item1 < item2) ? -1 : ((item1 > item2) ?  1 : 0));
+            };
+            jQuery.fn.dataTableExt.oSort['type-sort-desc'] = function(x, y) {
+		var item1 = bib2html.importance[this.entryTypes[x]],
+                    item2 = bib2html.importance[this.entryTypes[y]];
+		return ((item1 < item2) ? 1 : ((item1 > item2) ?  -1 : 0));
+            };
+            var table = this.$pubTable.dataTable({ 'aaData': this.bibentries,
+						   'aaSorting': this.options.sorting,
+						   'aoColumns': [ { "sTitle": "Year" },
+								  { "sTitle": "Type", "sType": "type-sort", "asSorting": [ "desc", "asc" ] },
+								  { "sTitle": "Publication", "bSortable": false }],
+						   'bPaginate': false
+						 });
+            if (this.options.visualization) {
+		this.addBarChart();
+            }
+            $("th", this.$pubTable).unbind("click").click(function(e) {
+		var $this = $(this),
+		    $thElems = $this.parent().find("th"),
+		    index = $thElems.index($this);
+		if ($this.hasClass("sorting_disabled")) { return; }
+		$this.toggleClass("sorting_asc").toggleClass("sorting_desc");
+
+		if (index === 0) {
+		    table.fnSort( [[0, $thElems.eq(0).hasClass("sorting_asc")?"asc":"desc"],
+				   [1, $thElems.eq(1).hasClass("sorting_asc")?"asc":"desc"]]);
+		} else {
+		    table.fnSort( [[1, $thElems.eq(1).hasClass("sorting_asc")?"asc":"desc"],
+				   [0, $thElems.eq(0).hasClass("sorting_asc")?"asc":"desc"]]);
+		}
+            });
+            // attach the event handlers to the bib items
+            $(".biblink", this.$pubTable).on('click', EventHandlers.showbib);
+            $(".bibclose", this.$pubTable).on('click', EventHandlers.hidebib);
+	}
     };
     // updates the stats, called whenever a new bibtex entry is parsed
     bibproto.updateStats = function updateStats(item) {
@@ -375,30 +387,18 @@ var bibtexify = (function($) {
     //              on formatting.
     //   - bib2html: Can be used to override any of the functions or properties of
     //               the bib2html object. See above, starting around line 40.
-    return function(bibsrc, bibElemId, opts) {
+    return function(bibsrc, opts, bibElemId) {
         var options = $.extend({}, {'visualization': true,
                                 'sorting': [[0, "desc"], [1, "desc"]]},
-                                opts);
-        var $pubTable = $("#" + bibElemId).addClass("bibtable");
-        if ($("#shutter").size() === 0) {
-            $pubTable.before('<div id="shutter" class="hidden"></div>');
-            $("#shutter").click(EventHandlers.hidebib);
-        }
-        if (options.visualization) {
-            $pubTable.before('<div id="' + bibElemId + 'pubchart" class="bibchart"></div>');
-        }
-        var $bibSrc;
-        if(bibsrc.indexOf('/') === -1) {
-            $bibSrc = $(bibsrc);
-        }
-        if ($bibSrc && $bibSrc.length) { // we found an element, use its HTML as bibtex
-            new Bib2HTML($bibSrc.html(), $pubTable, options);
-            $bibSrc.hide();
-        } else { // otherwise we assume it is a URL
-            var callbackHandler = function(data) {
-                new Bib2HTML(data, $pubTable, options);
-            };
-            $.get(bibsrc, callbackHandler, "text");
-        }
+                               opts);
+
+	var $pubTable = undefined;
+	if (bibElemId) {
+	    $pubTable = $("#" + bibElemId).addClass("bibtable");
+            if (options.visualization) {
+                $pubTable.before('<div id="' + bibElemId + 'pubchart" class="bibchart"></div>');
+            }
+	}
+        return new Bib2HTML(bibsrc, $pubTable, options);
     };
 })(jQuery);
