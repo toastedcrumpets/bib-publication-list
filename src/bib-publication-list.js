@@ -299,7 +299,6 @@ var bibtexify = (function($) {
 		    index = $thElems.index($this);
 		if ($this.hasClass("sorting_disabled")) { return; }
 		$this.toggleClass("sorting_asc").toggleClass("sorting_desc");
-		
 		if (index === 0) {
 		    table.fnSort( [[0, $thElems.eq(0).hasClass("sorting_asc")?"asc":"desc"],
 				   [1, $thElems.eq(1).hasClass("sorting_asc")?"asc":"desc"]]);
