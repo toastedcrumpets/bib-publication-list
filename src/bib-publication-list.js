@@ -76,10 +76,10 @@ var bibtexify = (function($) {
                 type = 'misc';
                 entryData.entryType = type;
             }
-	    entryData.authors = this.authors2html(entryData.author, bib);
             var itemStr = htmlify(bib.bib2html[type](entryData, bib));
-            itemStr += bib.bib2html.links(entryData);
-            itemStr += bib.bib2html.bibtex(entryData);
+            itemStr += bib.bib2html.links(entryData, bib);
+	    if (bib.options.showbibtex)
+		itemStr += bib.bib2html.bibtex(entryData);
             if (bib.options.tweet && entryData.url) {
                 itemStr += bib.bib2html.tweet(entryData, bib);
             }
@@ -89,6 +89,8 @@ var bibtexify = (function($) {
         // converts the given author data into HTML
         authors2html: function(authorData, bib) {
             var authorsStr = '';
+        if (!authorData)
+        	return "";
 	    if (authorData.length == 1)
 		authorsStr = bib.bibtex._formatAuthor(authorData[0]);
 	    else if (authorData.length == 2)
@@ -102,16 +104,46 @@ var bibtexify = (function($) {
 	    }
             return htmlify(authorsStr);
         },
+        // converts the given author data into HTML
+        authors2shorthtml: function(authorData, bib) {
+            var authorsStr = '';
+	    if (authorData.length == 1)
+		authorsStr = authorData[0].last;
+	    else if (authorData.length == 2)
+		authorsStr = authorData[0].last + " and " + authorData[1].last;
+	    else
+		authorsStr = authorData[0].last + " et al.";
+            return htmlify(authorsStr);
+        },
+	shortcite: function(entryData, bib) {
+            return this.authors2shorthtml(entryData.author, bib) + " (" + entryData.year + ")";
+        },
         // adds links to the PDF or url of the item
         links: function(entryData, bib) {
             var itemStr = '';
-            if (entryData.url && entryData.url.match(/.*\.pdf/)) {
-                itemStr += ' (<a title="PDF-version of this article" href="' +
-                            entryData.url + '">pdf<\/a>)';
-            } else if (entryData.url) {
-                itemStr += ' (<a title="This article online" href="' + entryData.url +
-                            '">link<\/a>)';
+	    if (entryData.url) {
+                itemStr += ' <a title="This article online" href="' + entryData.url +
+                    '"><span class="fa fa-globe" style="color:#0000FF;"></span><\/a>';
             }
+	    if (entryData.doi) {
+                itemStr += ' <a href="http://dx.doi.org/'+entryData.doi+'" target="_blank"><span class="fa fa-link" style="color:#0000FF;"></span></a>';
+            }
+	    if (entryData.file && bib.options.file_links) {
+		var files = entryData.file.split(";")
+		for (var fileidx = 0; fileidx < files.length; ++fileidx) {
+		    var data = files[fileidx].split(":");
+		    //data[0] name of file, data[1] path to file, data[2]={PDF} file type
+		    switch (data[2]) {
+		    case "PDF":
+			itemStr += '<a href="/static/literature/'+data[1]+'" target="_blank"><span class="fa fa-file-pdf-o" style="color:#e34947;"></span></a>';
+			break;
+		    default:
+			itemStr += '<a href="/static/literature/'+data[1]+'" target="_blank"><span class="fa fa-file-o"></span></a>';
+			break;
+		    }
+		}
+	    }
+
             return itemStr;
         },
         // adds the bibtex link and the opening div with bibtex content
@@ -167,11 +199,11 @@ var bibtexify = (function($) {
                 ((entryData.address)?", " + entryData.address:"") + ".<\/em>";
         },
         article: function(entryData, bib) {
-            return this.authors2html(entryData.author, bib) + " (" + entryData.year + "). " +
-                entryData.title + ". <em>" + entryData.journal + ", " + entryData.volume +
+            return this.authors2html(entryData.author, bib) + ' &ldquo;' +
+                entryData.title + ',&rdquo; <em>' + entryData.journal +"</em>" + ", <b>" + entryData.volume + "</b>" +
                 ((entryData.number)?"(" + entryData.number + ")":"")+ ", " +
-                "pp. " + entryData.pages + ". " +
-                ((entryData.address)?entryData.address + ".":"") + "<\/em>";
+                entryData.pages + " " + " (" + entryData.year + ") "+
+                ((entryData.address)?entryData.address + ".":"") ;
         },
         misc: function(entryData, bib) {
             return this.authors2html(entryData.author, bib) + " (" + entryData.year + "). " +
@@ -185,9 +217,9 @@ var bibtexify = (function($) {
             entryData.organization + ", " + entryData.school + ".";
         },
         techreport: function(entryData, bib) {
-            return this.authors2html(entryData.author, bib) + " (" + entryData.year + "). " +
-                entryData.title + ". " + entryData.institution + ". " +
-                entryData.number + ". " + entryData.type + ".";
+            return this.authors2html(entryData.author, bib) + " &ldquo;" +
+                entryData.title + ",&rdquo; " + entryData.institution + ", <b>" +
+                entryData.number + "</b> (" + entryData.year + ")";
         },
         book: function(entryData, bib) {
             return this.authors2html(entryData.author, bib) + " (" + entryData.year + "). " +
@@ -257,6 +289,9 @@ var bibtexify = (function($) {
             var item = this.bibtex.data[index];
 	    item.id = item.cite;
 	    item.title = htmlify(item.title);
+	    if (item.author)
+	    item.authors = this.bib2html.authors2html(item.author, this);
+
             if (!item.year) {
               item.year = this.options.defaultYear || "To Appear";
             }
@@ -404,7 +439,7 @@ var bibtexify = (function($) {
     //               the bib2html object. See above, starting around line 40.
     return function(bibsrc, opts, bibElemId) {
         var options = $.extend({},
-			       {'visualization': false, 'sorting': [[0, "desc"], [1, "desc"]]},
+			       {'visualization': false, 'sorting': [[0, "desc"], [1, "desc"]], file_links:false, showbibtex:false},
                                opts);
 	
 	if (bibElemId) {
