@@ -137,10 +137,10 @@ var bibtexify = (function($) {
             var itemStr = '';
 	    if (entryData.url) {
                 itemStr += ' <a title="This article online" href="' + entryData.url +
-                    '"><span class="fa fa-globe" style="color:#0000FF;"></span><\/a>';
+                    '"><span class="ion ion-android-globe" style="color:#0000FF;"></span><\/a>&nbsp;';
             }
 	    if (entryData.doi) {
-                itemStr += ' <a href="http://dx.doi.org/'+entryData.doi+'" target="_blank"><span class="fa fa-link" style="color:#0000FF;"></span></a>';
+                itemStr += ' <a href="http://dx.doi.org/'+entryData.doi+'" target="_blank"><span class="fa fa-link" style="color:#0000FF;"></span></a>&nbsp;';
             }
 	    if (entryData.file && bib.options.file_links) {
 		var files = entryData.file.split(";")
@@ -149,10 +149,10 @@ var bibtexify = (function($) {
 		    //data[0] name of file, data[1] path to file, data[2]={PDF} file type
 		    switch (data[2]) {
 		    case "PDF":
-			itemStr += '<a href="/static/literature/'+data[1]+'" target="_blank"><span class="fa fa-file-pdf-o" style="color:#e34947;"></span></a>';
+			itemStr += '<a href="/static/literature/'+data[1]+'" target="_blank"><span class="fa fa-file-pdf-o" style="color:#e34947;"></span></a>&nbsp;';
 			break;
 		    default:
-			itemStr += '<a href="/static/literature/'+data[1]+'" target="_blank"><span class="fa fa-file-o"></span></a>';
+			itemStr += '<a href="/static/literature/'+data[1]+'" target="_blank"><span class="fa fa-file-o"></span></a>&nbsp;';
 			break;
 		    }
 		}
