@@ -136,10 +136,10 @@ var bibtexify = (function($) {
             var itemStr = '';
 	    if (entryData.url) {
                 itemStr += ' <a title="This article online" href="' + entryData.url +
-                    '"><span class="ion ion-android-globe" style="color:#0000FF;"></span><\/a>&nbsp;';
+                    '"><span class="fa fa-external-link" style="color:#0000FF;"></span><\/a> ';
             }
 	    if (entryData.doi) {
-                itemStr += ' <a href="http://dx.doi.org/'+entryData.doi+'" target="_blank"><span class="fa fa-link" style="color:#0000FF;"></span></a>&nbsp;';
+                itemStr += ' <a href="http://dx.doi.org/'+entryData.doi+'" target="_blank"><span class="fa fa-link" style="color:#0000FF;"></span></a> ';
             }
 	    if (entryData.file && bib.options.file_links) {
 		var files = entryData.file.split(";")
@@ -148,10 +148,10 @@ var bibtexify = (function($) {
 		    //data[0] name of file, data[1] path to file, data[2]={PDF} file type
 		    switch (data[2]) {
 		    case "PDF":
-			itemStr += '<a href="/static/literature/'+data[1]+'" target="_blank"><span class="fa fa-file-pdf-o" style="color:#e34947;"></span></a>&nbsp;';
+			itemStr += '<a href="/static/literature/'+data[1]+'" target="_blank"><span class="fa fa-file-pdf-o" style="color:#e34947;"></span></a> ';
 			break;
 		    default:
-			itemStr += '<a href="/static/literature/'+data[1]+'" target="_blank"><span class="fa fa-file-o"></span></a>&nbsp;';
+			itemStr += '<a href="/static/literature/'+data[1]+'" target="_blank"><span class="fa fa-file-o"></span></a> ';
 			break;
 		    }
 		}
@@ -206,10 +206,9 @@ var bibtexify = (function($) {
         },
         // helper functions for formatting different types of bibtex entries
         inproceedings: function(entryData, bib) {
-            return this.authors2html(entryData, bib) + " (" + entryData.year + "). " +
-                entryData.title + ". In <em>" + entryData.booktitle +
-                ", pp. " + entryData.pages +
-                ((entryData.address)?", " + entryData.address:"") + ".<\/em>";
+            return this.authors2html(entryData, bib) + " (" + entryData.year + "). "
+		+ entryData.title + ". In <em>" + entryData.booktitle
+                + ((entryData.address)?", " + entryData.address:"") + ".<\/em>";
         },
         article: function(entryData, bib) {
             return this.authors2html(entryData, bib) + ', &ldquo;' +
