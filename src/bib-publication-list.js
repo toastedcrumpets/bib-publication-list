@@ -1,4 +1,3 @@
-
 var bibtexify = (function($) {
     // helper function to "compile" LaTeX special characters to HTML
     var htmlify = function(str) {
@@ -321,15 +320,16 @@ var bibtexify = (function($) {
 	    this.entries[item.cite] = item;
         }
 
+	var self = this;
 	if (this.$pubTable) {
             jQuery.fn.dataTableExt.oSort['type-sort-asc'] = function(x, y) {
-		var item1 = this.bib2html.importance[entryTypes[x]],
-                    item2 = this.bib2html.importance[entryTypes[y]];
+		var item1 = self.bib2html.importance[entryTypes[x]],
+                    item2 = self.bib2html.importance[entryTypes[y]];
 		return ((item1 < item2) ? -1 : ((item1 > item2) ?  1 : 0));
             };
             jQuery.fn.dataTableExt.oSort['type-sort-desc'] = function(x, y) {
-		var item1 = this.bib2html.importance[entryTypes[x]],
-                    item2 = this.bib2html.importance[entryTypes[y]];
+		var item1 = self.bib2html.importance[entryTypes[x]],
+                    item2 = self.bib2html.importance[entryTypes[y]];
 		return ((item1 < item2) ? 1 : ((item1 > item2) ?  -1 : 0));
             };
             var table = this.$pubTable.dataTable({ 'aaData': bibentries,
