@@ -71,7 +71,7 @@ var bibtexify = (function($) {
         entry2html: function(entryData, bib) {
             var type = entryData.entryType.toLowerCase();
             // default to type misc if type is unknown
-            if(array_keys(bib.bib2html).indexOf(type) === -1) {
+            if(!(type in bib.bib2html)) {
                 type = 'misc';
                 entryData.entryType = type;
             }
