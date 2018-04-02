@@ -126,8 +126,14 @@ var bibtexify = (function($) {
             return htmlify(authorsStr);
         },
 	shortcite: function(entryData, bib) {
+	    var year;
+	    if (entryData.year == "To Appear")
+		year = "";
+	    else
+		year = " (" + entryData.year + ")";
+	    
 	    if (entryData.author)
-		return this.authors2shorthtml(entryData, bib) + " (" + entryData.year + ")";
+		return this.authors2shorthtml(entryData, bib) + year;
 	    else
 		return entryData.title + " (" + entryData.year + ")";
         },
