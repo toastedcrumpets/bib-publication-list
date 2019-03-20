@@ -82,8 +82,7 @@ var bibtexify = (function($) {
             if (bib.options.tweet && entryData.url) {
                 itemStr += bib.bib2html.tweet(entryData, bib);
             }
-            return itemStr.replace(/undefined/g,
-                                   '<span class="undefined">missing<\/span>');
+            return itemStr.replace(/undefined/g, '<span class="undefined">missing<\/span>');
         },
         // converts the given author data into HTML
         authors2html: function(entryData, bib) {
@@ -212,10 +211,12 @@ var bibtexify = (function($) {
         },
         article: function(entryData, bib) {
             return this.authors2html(entryData, bib) + ', &ldquo;' +
-                entryData.title + ',&rdquo; <em>' + entryData.journal +"</em>" + ", <b>" + entryData.volume + "</b>" +
-                ((entryData.number)?"(" + entryData.number + ")":"")+ ", " +
-                entryData.pages + " " + " (" + entryData.year + ") "+
-                ((entryData.address)?entryData.address + ".":"") ;
+                entryData.title + ',&rdquo; <em>' + entryData.journal + "</em>, "
+		+ ((entryData.volume)? "<b>" + entryData.volume + "</b>, " : "")
+                + ((entryData.number) ? "(" + entryData.number + "), " : "")
+		+ ((entryData.pages) ? entryData.pages + " " : "")
+		+ ((entryData.year) ? "(" + entryData.year + ") " : "")
+		+ ((entryData.address)? entryData.address + ".":"") ;
         },
         misc: function(entryData, bib) {
             return this.authors2html(entryData, bib) + " (" + entryData.year + "). " +
