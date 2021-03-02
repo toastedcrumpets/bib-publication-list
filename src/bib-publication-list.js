@@ -231,8 +231,8 @@ var bibtexify = (function($) {
                 ((entryData.note)?entryData.note + ".":"");
         },
         mastersthesis: function(entryData, bib) {
-          return this.authors2html(entryData, bib) + ", &ldquo;"
-	  entryData.title + ",&rdquo; " + entryData.school + " (" + entryData.year + ")" ;
+          return this.authors2html(entryData, bib) + ", &ldquo;" 
+	  + entryData.title + ",&rdquo; " + entryData.school + " (" + entryData.year + ")" ;
         },
         techreport: function(entryData, bib) {
             return this.authors2html(entryData, bib) + ", &ldquo;" +
